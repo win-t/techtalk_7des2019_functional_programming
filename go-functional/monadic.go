@@ -15,8 +15,8 @@ func threeDivX(x int) int {
 	return 3 / x
 }
 
-// normal composition, the (.) operator
-// for simplicity, i don't this function accept tuple of function
+// normal composition, the operator(.)
+// for simplicity, this function accept tuple of function
 // instead of return function that return another function (High order function), like in simple.go
 func compose(f func(int) int, g func(int) int) func(int) int {
 	return func(x int) int {
@@ -65,7 +65,7 @@ func composeMonad(f func(int) monad, g func(int) monad) func(int) monad {
 	}
 }
 
-// helper for (<=<) composition of haskell
+// helper for operator(<=<) composition of haskell
 type monadComposer struct{ f func(int) monad }
 
 func monadComposerOf(f func(int) monad) monadComposer { return monadComposer{f} }
@@ -74,7 +74,7 @@ func (c monadComposer) dot(f func(int) monad) monadComposer {
 	return monadComposer{composeMonad(c.f, f)}
 }
 
-// in other language (>=>) operator also called flatMap
+// in other language operator(>=>)  also called flatMap
 func (c monadComposer) flatMap(f func(int) monad) monadComposer {
 	return monadComposer{composeMonad(f, c.f)}
 }
@@ -91,22 +91,22 @@ func printMonad(m monad) {
 	}
 }
 func main() {
+	// this will panic
 	// normal := compose(threeDivX, add5)(-5)
 	// fmt.Println(normal)
 
-	// will error
+	// will print error
 	printMonad(composeMonad(threeDivXMonad, add5Monad)(-5))
 
 	// composition style
 
-	// will error
+	// will print error
 	printMonad(monadComposerOf(threeDivXMonad).
 		dot(add5Monad).
 		do(-5),
 	)
 
-	// monadic composition also called flatMap
-	// you can compose the multiple into single action, and call it later
+	// you can compose the multiple function into single function, and call it later
 	// the action is short circuit
 
 	action := monadComposerOf(idMonad).

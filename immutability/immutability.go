@@ -19,6 +19,7 @@ func printScore(s score) { fmt.Println(s.name, s.value) }
 
 // getMinInList have side effect
 // and the caller maybe not aware of it
+// when caller need to aware of the called function, that will make overall code hard to maintain
 func getMinInList(scores []score) score {
 	sort.Slice(scores, func(i, j int) bool { return scores[i].value < scores[j].value })
 	return scores[0]

@@ -16,7 +16,7 @@ var (
 
 	filter func(func(int) bool) func([]int) []int
 	fmap   func(func(int) int) func([]int) []int
-	fold   func(func(int) func(int) int) func(int) func([]int) int
+	foldl  func(func(int) func(int) int) func(int) func([]int) int
 )
 
 func init() {
@@ -46,6 +46,7 @@ func init() {
 		}
 	}
 
+	// the operator(.) in haskell, function composition
 	compose = func(f func(int) int) func(func(int) int) func(int) int {
 		return func(g func(int) int) func(int) int {
 			return func(x int) int {
@@ -76,7 +77,7 @@ func init() {
 		}
 	}
 
-	fold = func(f func(int) func(int) int) func(int) func([]int) int {
+	foldl = func(f func(int) func(int) int) func(int) func([]int) int {
 		return func(z int) func([]int) int {
 			return func(xs []int) int {
 				if len(xs) == 0 {
@@ -93,6 +94,7 @@ func init() {
 
 }
 
+// helper for generate list
 func genRange(min int, step int, max int) []int {
 	var ret []int
 	for val := min; val <= max; val += step {
@@ -110,7 +112,8 @@ func (c composer) dot(f func(int) int) composer {
 	return composer{compose(c.f)(f)}
 }
 
-func (c composer) tod(f func(int) int) composer {
+// same like the operator(.) / "dot" but in reverse order
+func (c composer) then(f func(int) int) composer {
 	// we can't use flip(compose)(c.f)(f), because go doesn't support generic
 	return composer{compose(f)(c.f)}
 }
@@ -137,7 +140,7 @@ func main() {
 
 	// ((+5) . (*3) . flip (-) 4) 10
 	fmt.Println(composerOf(add5).dot(mul(3)).dot(flip(sub)(4)).do(10))
-	fmt.Println(composerOf(flip(sub)(4)).tod(mul(3)).tod(add5).do(10))
+	fmt.Println(composerOf(flip(sub)(4)).then(mul(3)).then(add5).do(10))
 
 	// filter (\x -> x `mod` 2 == 0) [1..10]
 	isEven := func(x int) bool { return x%2 == 0 }
@@ -146,13 +149,13 @@ func main() {
 	// fmap (+5) [1,3..10]
 	fmt.Println(fmap(add(5))(genRange(1, 2, 10)))
 
-	// let sum = fold (+) 0
+	// let sum = foldl (+) 0
 	//  in sum [1..0]
-	sum := fold(add)(0)
+	sum := foldl(add)(0)
 	fmt.Println(sum(genRange(1, 1, 10)))
 
-	// fold (*) 1 [1..0]
-	product := fold(mul)(1)
+	// foldl (*) 1 [1..0]
+	product := foldl(mul)(1)
 	fmt.Println(product(genRange(1, 1, 10)))
 
 	// sum (filter (\x -> x `mod` 2 /= 0) (fmap (*5) [1..5]))
